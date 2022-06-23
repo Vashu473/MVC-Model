@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 const morgan = require("morgan");
 const helmet = require("helmet");
 const fs = require("fs");
@@ -9,6 +9,8 @@ const path = require("path");
 const { startDb } = require("./src/db/connection/db.connection");
 const bodyparser = require("body-parser");
 const TestRouter = require("./src/routes/test.routes");
+const { isMaster, fork } = require("cluster");
+const { cpus } = require("os");
 // adding milldlewares
 // Body-parser middleware
 app.use(bodyparser.urlencoded({ extended: false }));
@@ -51,9 +53,16 @@ app.use((err, req, res, next) => {
 app.use("/v1/test", TestRouter);
 // routing listening
 async function startServer() {
-  await startDb();
-  app.listen(port, () => {
-    console.log("Server running on port", port);
-  });
+  if (isMaster) {
+    for (let i = 0; i < cpus().length; i++) {
+      fork();
+    }
+    console.log("master started");
+  } else {
+    await startDb();
+    app.listen(port, () => {
+      console.log("Server running on port", port);
+    });
+  }
 }
 startServer();

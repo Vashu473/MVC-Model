@@ -9,7 +9,7 @@ const { TestC, GetDataC } = require("../controllers/test.controller");
 
 //  get token will validate your jwt token
 
-amountManagementRouter.post("/getData", GetDataC);
-amountManagementRouter.post("/test", getToken, TestC);
+TestRouter.get("/getData", GetDataC);
+TestRouter.post("/test", getToken, TestC);
 
 module.exports = TestRouter;
